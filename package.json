@@ -1,0 +1,18 @@
+{
+  "name": "npm-link-all",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/bin/npm-link-all",
+  "dependencies": {
+    "minimist": "^1.1.1",
+    "shelljs": "^0.5.1"
+  },
+  "devDependencies": {
+    "coffee-script": ""
+  },
+  "scripts": {
+    "test": "coffee ./bin/npm-link-all.coffee --src ~/workspace/github --dest ~/.npm --username joaoafrmartins"
+  },
+  "author": "Joao Afonso Martins",
+  "license": "MIT"
+}
