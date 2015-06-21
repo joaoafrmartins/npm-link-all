@@ -2,13 +2,13 @@
   "name": "npm-link-all",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/bin/npm-link-all",
-  "dependencies": {
-    "minimist": "^1.1.1",
-    "shelljs": "^0.5.1"
+  "bin": {
+    "npm-link-all": "./bin/npm-link-all"
   },
-  "devDependencies": {
-    "coffee-script": ""
+  "main": "./bin/npm-link-all",
+  "dependencies": {
+    "minimist": "",
+    "shelljs": ""
   },
   "scripts": {
     "test": "coffee ./bin/npm-link-all.coffee --src ~/workspace/github --dest ~/.npm --username joaoafrmartins"

@@ -1,0 +1,69 @@
+#!/usr/bin/env coffee
+
+require 'shelljs/global'
+
+minimist = require 'minimist'
+
+{ keys } = Object
+
+{ resolve, dirname } = require 'path'
+
+args = minimist process.argv.slice 2
+
+{ src, dest, filename, link, fields } = args
+
+cwd = pwd()
+
+link ?= true
+
+fields ?= ["dependencies", "devDependencies"]
+
+filename ?= "package.json"
+
+src ?= "."
+
+src = resolve src
+
+if typeof dest is "undefined"
+
+  if filename is "package.json"
+
+    dest ?= "node_modules"
+
+  else if filename is "bower.json"
+
+    rc = ".bowerrc"
+
+    if test "-e", rc
+
+      { directory: dest } = (JSON.parse(rc)) or {}
+
+    else dest ?= "bower_components"
+
+dest = resolve dest
+
+regexp = new RegExp "#{filename}$"
+
+find(src).map (file) ->
+
+  if not regexp.test file then return null
+
+  file = JSON.parse cat file
+
+  dir = dirname file
+
+  cd dir
+
+  dependencies = []
+
+  fields.map (field) ->
+
+    dependencies = dependencies.concat keys(file?[field] or {})
+
+  dependencies = dependencies.join " "
+
+  exec "npm link #{dependencies}"
+
+  if link then exec "npm link"
+
+  cd cwd
