@@ -8,7 +8,9 @@
   "main": "./bin/npm-link-all",
   "dependencies": {
     "minimist": "",
-    "shelljs": ""
+    "shelljs": "",
+    "async": "",
+    "rc": ""
   },
   "scripts": {
     "test": "coffee ./bin/npm-link-all.coffee --src ~/workspace/github --dest ~/.npm --username joaoafrmartins"

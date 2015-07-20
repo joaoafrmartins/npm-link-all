@@ -1,12 +1,16 @@
 #!/usr/bin/env coffee
 
+require 'rc'
+
 require 'shelljs/global'
 
 minimist = require 'minimist'
 
 { keys } = Object
 
-{ resolve, dirname } = require 'path'
+{ resolve, dirname, sep } = require 'path'
+
+{ parallel } = require 'async'
 
 args = minimist process.argv.slice 2
 
@@ -14,56 +18,49 @@ args = minimist process.argv.slice 2
 
 cwd = pwd()
 
+src ?= "."
+
+src = resolve src
+
 link ?= true
 
 fields ?= ["dependencies", "devDependencies"]
 
 filename ?= "package.json"
 
-src ?= "."
-
-src = resolve src
+regexp = new RegExp "#{src.split(sep).join('\\'+sep)}\\#{sep}([\\w|\\-]+\\#{sep})?#{filename}$"
 
 if typeof dest is "undefined"
 
-  if filename is "package.json"
+  npmrc = require('rc')('npm');
 
-    dest ?= "node_modules"
+  dest = npmrc.root
 
-  else if filename is "bower.json"
+packages = {}
 
-    rc = ".bowerrc"
-
-    if test "-e", rc
-
-      { directory: dest } = (JSON.parse(rc)) or {}
-
-    else dest ?= "bower_components"
-
-dest = resolve dest
-
-regexp = new RegExp "#{filename}$"
+dependencies = {}
 
 find(src).map (file) ->
 
   if not regexp.test file then return null
 
+  folder = dirname file
+
   file = JSON.parse cat file
 
-  dir = dirname file
-
-  cd dir
-
-  dependencies = []
+  deps = []
 
   fields.map (field) ->
 
-    dependencies = dependencies.concat keys(file?[field] or {})
+    deps = deps.concat keys(file?[field] or {})
 
-  dependencies = dependencies.join " "
+  deps.map (dependency) ->
 
-  exec "npm link #{dependencies}"
+    if not test "-e", resolve dest, dependency
 
-  if link then exec "npm link"
+      dependencies[dependency] = true
 
-  cd cwd
+  packages[folder] = deps
+
+# parallel
+# console.log packages, dependencies
