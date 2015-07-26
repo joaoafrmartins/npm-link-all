@@ -4,6 +4,10 @@ require 'rc'
 
 require 'shelljs/global'
 
+{ EOL } = require 'os'
+
+{ series } = require 'async'
+
 minimist = require 'minimist'
 
 { keys } = Object
@@ -62,5 +66,82 @@ find(src).map (file) ->
 
   packages[folder] = deps
 
-# parallel
-# console.log packages, dependencies
+installPackages = (done) ->
+
+  pkgs = Object.keys(packages).map (pkg) ->
+
+    (
+
+      (next) ->
+
+        deps = packages[@pkg]
+
+        out = ""
+
+        err = ""
+
+        _exec = exec "cd #{pkg} && npm link #{deps.join ' '} && cd -", { async: true, silent: true }
+
+        _exec.stderr.on "data", (data) ->
+
+          out += data.toString()
+
+        _exec.stdout.on "data", (data) ->
+
+          err += data.toString()
+
+        _exec.stdout.on "end", =>
+
+          console.log "#{@pkg}"
+
+          next null, err + out
+
+    ).bind pkg: pkg
+
+  series pkgs, done
+
+installDependencies = (done) ->
+
+  deps = Object.keys(dependencies).map (dep) ->
+
+    (
+
+      (next) ->
+
+        out = ""
+
+        err = ""
+
+        _exec = exec "npm install -g #{@dep}", { async: true, silent: true }
+
+        _exec.stderr.on "data", (data) ->
+
+          out += data.toString()
+
+        _exec.stdout.on "data", (data) ->
+
+          err += data.toString()
+
+        _exec.stdout.on "end", =>
+
+          console.log "#{@dep}"
+
+          next null, err + out
+
+    ).bind dep: dep
+
+  series deps, done
+
+installDependencies (err, res) ->
+
+  if err then console.log err
+
+  if res then console.log res.join EOL
+
+  installPackages (err, res) ->
+
+    if err then console.log err
+
+    if res then console.log res.join EOL
+
+    console.log "done!"
